@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('last_name', 125)->after('first_name');
             $table->string('nickname', 255)->after('last_name');
             $table->string('phone', 20)->nullable()->after('password');
-            $table->enum('role', ['admin', 'teacher'])->after('phone');
+            $table->enum('role', ['admin', 'teacher', 'parent'])->after('phone');
             $table->enum('status', ['active', 'inactive'])->default('active')->after('role');
         });
     }

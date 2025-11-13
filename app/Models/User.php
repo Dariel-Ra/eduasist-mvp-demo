@@ -80,6 +80,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if the user is a parent.
+     */
+    public function isParent(): bool
+    {
+        return $this->role === 'parent';
+    }
+
+    /**
      * Check if the user is active.
      */
     public function isActive(): bool

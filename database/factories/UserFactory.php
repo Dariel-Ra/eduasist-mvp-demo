@@ -30,7 +30,7 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= 'password',
             'phone' => fake()->optional()->phoneNumber(),
-            'role' => fake()->randomElement(['admin', 'teacher']),
+            'role' => fake()->randomElement(['admin', 'teacher', 'parent']),
             'status' => 'active',
             'remember_token' => Str::random(10),
             'two_factor_secret' => Str::random(10),
@@ -78,6 +78,16 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'teacher',
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a parent.
+     */
+    public function parent(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'parent',
         ]);
     }
 

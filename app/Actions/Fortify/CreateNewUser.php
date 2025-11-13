@@ -31,7 +31,7 @@ class CreateNewUser implements CreatesNewUsers
             ],
             'password' => $this->passwordRules(),
             'phone' => ['nullable', 'string', 'max:20'],
-            'role' => ['sometimes', 'in:admin,teacher'],
+            'role' => ['sometimes', 'in:admin,teacher,parent'],
         ])->validate();
 
         return User::create([
@@ -41,7 +41,7 @@ class CreateNewUser implements CreatesNewUsers
             'email' => $input['email'],
             'password' => $input['password'],
             'phone' => $input['phone'] ?? null,
-            'role' => $input['role'] ?? 'teacher', // Default role for new registrations
+            'role' => $input['role'] ?? 'parent', // Default role for new registrations
             'status' => 'active',
         ]);
     }
