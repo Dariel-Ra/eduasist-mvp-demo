@@ -19,7 +19,9 @@ class CreateNewUser implements CreatesNewUsers
     public function create(array $input): User
     {
         Validator::make($input, [
-            'name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:125'],
+            'last_name' => ['required', 'string', 'max:125'],
+            'nickname' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
                 'string',
@@ -28,12 +30,19 @@ class CreateNewUser implements CreatesNewUsers
                 Rule::unique(User::class),
             ],
             'password' => $this->passwordRules(),
+            'phone' => ['nullable', 'string', 'max:20'],
+            'role' => ['sometimes', 'in:admin,teacher,parent'],
         ])->validate();
 
         return User::create([
-            'name' => $input['name'],
+            'first_name' => $input['first_name'],
+            'last_name' => $input['last_name'],
+            'nickname' => $input['nickname'],
             'email' => $input['email'],
             'password' => $input['password'],
+            'phone' => $input['phone'] ?? null,
+            'role' => $input['role'] ?? 'parent', // Default role for new registrations
+            'status' => 'active',
         ]);
     }
 }
