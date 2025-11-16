@@ -19,14 +19,9 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'firt_name',
-        'last_name',
-        'nickname',
+        'name',
         'email',
         'password',
-        'phone',
-        'role',
-        'status',
     ];
 
     /**
@@ -53,57 +48,5 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
-    }
-    public function getFullNameAttribute(): string
-    {
-        return "{$this->first_name} {$this->last_name}";
-    }
-
-    /**
-     * Check if the user is an admin.
-     */
-    public function isAdmin(): bool
-    {
-        return $this->role === 'admin';
-    }
-
-    /**
-     * Check if the user is a teacher.
-     */
-    public function isTeacher(): bool
-    {
-        return $this->role === 'teacher';
-    }
-
-    /**
-     * Check if the user is a parent.
-     */
-    public function isParent(): bool
-    {
-        return $this->role === 'parent';
-    }
-
-    /**
-     * Check if the user is active.
-     */
-    public function isActive(): bool
-    {
-        return $this->status === 'active';
-    }
-
-    /**
-     * Scope a query to only include active users.
-     */
-    public function scopeActive($query)
-    {
-        return $query->where('status', 'active');
-    }
-
-    /**
-     * Scope a query to only include users of a specific role.
-     */
-    public function scopeRole($query, string $role)
-    {
-        return $query->where('role', $role);
     }
 }
