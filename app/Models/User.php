@@ -51,19 +51,19 @@ class User extends Authenticatable
         ];
     }
 
-
+    /**
+     * Get the teacher profile associated with the user.
+     */
+    public function teacher(): HasOne
+    {
+        return $this->hasOne(Teacher::class);
+    }
 
     /**
-
-     * Get the teacher profile associated with the user.
-
+     * Get the parent profile associated with the user.
      */
-
-    public function teacher(): HasOne
-
+    public function parent(): HasOne
     {
-
-        return $this->hasOne(Teacher::class);
-
+        return $this->hasOne(ParentsModel::class);
     }
 }
