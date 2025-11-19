@@ -2,10 +2,23 @@
 
 namespace App\Providers;
 
+use App\Models\Teacher;
+use App\Observers\TeacherObserver;
+use App\Policies\TeacherPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * The policy mappings for the application.
+     *
+     * @var array<class-string, class-string>
+     */
+    protected $policies = [
+        Teacher::class => TeacherPolicy::class,
+    ];
+
     /**
      * Register any application services.
      */
@@ -19,6 +32,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Registrar el Observer de Teacher
+        Teacher::observe(TeacherObserver::class);
+
+        // Registrar las policies
+        foreach ($this->policies as $model => $policy) {
+            Gate::policy($model, $policy);
+        }
     }
 }
