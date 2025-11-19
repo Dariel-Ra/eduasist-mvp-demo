@@ -64,6 +64,6 @@ class User extends Authenticatable
      */
     public function parent(): HasOne
     {
-        return $this->hasOne(ParentsModel::class);
+        return $this->hasOne(Guardian::class);
     }
 }

@@ -4,19 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Course extends Model
+class Setting extends Model
 {
     use HasFactory;
-
+ 
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'courses';
-
+    protected $table = 'settings';
+ 
     /**
      * Indicates if the model should be timestamped.
      *
@@ -28,15 +27,12 @@ class Course extends Model
      * The attributes that are mass assignable.
      *
      * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-        'code',
-        'description',
-        'grade_level',
-        'active',
+     */    protected $fillable = [
+        'late_threshold_minutes',
+        'auto_notify_parents',
+        'notification_delay_minutes',
     ];
-
+ 
     /**
      * Get the attributes that should be cast.
      *
@@ -45,16 +41,22 @@ class Course extends Model
     protected function casts(): array
     {
         return [
-            'active' => 'boolean',
+            'late_threshold_minutes' => 'integer',
+            'auto_notify_parents' => 'boolean',
+            'notification_delay_minutes' => 'integer',
             'created_at' => 'datetime',
         ];
     }
 
     /**
-     * Get the sections for the course.
+     * Get the singleton setting instance.
      */
-    public function sections(): HasMany
+    public static function getInstance(): self
     {
-        return $this->hasMany(CourseSection::class, 'course_id');
+        return self::firstOrCreate([], [
+            'late_threshold_minutes' => 15,
+            'auto_notify_parents' => true,
+            'notification_delay_minutes' => 30,
+        ]);
     }
 }

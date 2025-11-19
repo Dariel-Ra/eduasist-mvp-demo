@@ -2,20 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Course extends Model
+class CourseSectionStudent extends Pivot
 {
-    use HasFactory;
+        use HasFactory;
 
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'courses';
+    protected $table = 'course_section_student';
 
     /**
      * Indicates if the model should be timestamped.
@@ -30,13 +29,11 @@ class Course extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'name',
-        'code',
-        'description',
-        'grade_level',
-        'active',
+        'course_section_id',
+        'student_id',
+        'status',
     ];
-
+ 
     /**
      * Get the attributes that should be cast.
      *
@@ -45,16 +42,7 @@ class Course extends Model
     protected function casts(): array
     {
         return [
-            'active' => 'boolean',
             'created_at' => 'datetime',
         ];
-    }
-
-    /**
-     * Get the sections for the course.
-     */
-    public function sections(): HasMany
-    {
-        return $this->hasMany(CourseSection::class, 'course_id');
     }
 }

@@ -2,29 +2,26 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Teacher extends Model
+class GuardianNotification extends Model
 {
-    use HasFactory;
-
+        use HasFactory;
+ 
     /**
      * The table associated with the model.
      *
      * @var string
      */
-
-    protected $table = 'teachers';
-
+    protected $table = 'guardian_notifications';
+ 
     /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
-
     public $timestamps = false;
  
     /**
@@ -32,11 +29,14 @@ class Teacher extends Model
      *
      * @var list<string>
      */
-
     protected $fillable = [
-        'user_id',
-        'code',
-        'specialty',
+        'attendance_id',
+        'guardian_id',
+        'type',
+        'method',
+        'message',
+        'status',
+        'sent_at',
     ];
  
     /**
@@ -47,31 +47,24 @@ class Teacher extends Model
     protected function casts(): array
     {
         return [
+            'sent_at' => 'datetime',
             'created_at' => 'datetime',
         ];
     }
-
+ 
     /**
-     * Get the user that owns the teacher profile.
+     * Get the attendance that owns the notification.
      */
-    public function user(): BelongsTo
+    public function attendance(): BelongsTo
     {
-        return $this->belongsTo(User::class);
-    }
-    
-    /**
-     * Get the sections taught by the teacher.
-     */
-    public function sections(): HasMany
-    {
-        return $this->hasMany(CourseSection::class, 'teacher_id');
+        return $this->belongsTo(StudentAttendance::class);
     }
 
     /**
-     * Get the attendances recorded by the teacher.
+     * Get the guardian that receives the notification.
      */
-    public function attendances(): HasMany
+    public function guardian(): BelongsTo
     {
-        return $this->hasMany(StudentAttendance::class, 'teacher_id');
+        return $this->belongsTo(Guardian::class, 'guardian_id');
     }
 }

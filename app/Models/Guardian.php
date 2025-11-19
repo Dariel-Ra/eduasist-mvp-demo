@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class ParentsModel extends Model
+class Guardian extends Model
 {
     use HasFactory;
  
@@ -16,10 +16,9 @@ class ParentsModel extends Model
      *
      * @var string
      */
-    protected $table = 'parentsmodel';
+    protected $table = 'guardians';
  
     /**
-
      * Indicates if the model should be timestamped.
      *
      * @var bool
@@ -64,12 +63,11 @@ class ParentsModel extends Model
     public function students(): BelongsToMany
     {
         return $this->belongsToMany(Student::class, 
-            'parent_student',
-            'parent_id', 
+            'guardian_student', 
+            'guardian_id', 
             'student_id')
-            ->using(ParentStudent::class)
+            ->using(GuardianStudent::class)
             ->withPivot('relationship', 'is_primary')
             ->withTimestamps();
     }
 }
-

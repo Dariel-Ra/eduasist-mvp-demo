@@ -2,21 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Student extends Model
+class CourseSection extends Model
 {
-    use HasFactory;
+        use HasFactory;
 
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'students';
+    protected $table = 'course_sections';
 
     /**
      * Indicates if the model should be timestamped.
@@ -31,12 +32,11 @@ class Student extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'first_name',
-        'last_name',
-        'enrollment_code',
-        'date_of_birth',
-        'grade_level',
+        'course_id',
+        'teacher_id',
         'section',
+        'classroom',
+        'max_students',
         'active',
     ];
 
@@ -48,55 +48,48 @@ class Student extends Model
     protected function casts(): array
     {
         return [
-            'date_of_birth' => 'date',
+            'max_students' => 'integer',
             'active' => 'boolean',
             'created_at' => 'datetime',
         ];
     }
 
     /**
-     * Get the guardians associated with the student.
-
+     * Get the course that owns the section.
      */
-
-    public function guardians(): BelongsToMany
+    public function course(): BelongsTo
     {
-        return $this->belongsToMany(Guardian::class, 
-        'guardian_student', 
-        'student_id', 
-        'guardian_id')
-        ->using(GuardianStudent::class)
-        ->withPivot('relationship', 'is_primary')
-        ->withTimestamps();
+        return $this->belongsTo(Course::class);
     }
 
     /**
-     * Get the full name of the student.
+     * Get the teacher that teaches the section.
      */
-    public function getFullNameAttribute(): string
+    public function teacher(): BelongsTo
     {
-        return "{$this->first_name} {$this->last_name}";
+        return $this->belongsTo(Teacher::class);
     }
 
     /**
-     * Get the sections the student is enrolled in.
+     * Get the students enrolled in the section.
      */
-    public function sections(): BelongsToMany
+    public function students(): BelongsToMany
     {
-        return $this->belongsToMany(CourseSection::class, 
+        return $this->belongsToMany(Student::class, 
         'course_section_student', 
-        'student_id', 
-        'course_section_id')
+        'course_section_id', 
+        'student_id')
             ->using(CourseSectionStudent::class)
             ->withPivot('status')
             ->withTimestamps();
     }
 
     /**
-     * Get the attendances for the student.
+     * Get the attendances for the section.
      */
     public function attendances(): HasMany
     {
-        return $this->hasMany(StudentAttendance::class, 'student_id');
+        return $this->hasMany(StudentAttendance::class, 
+        'course_section_id');
     }
 }

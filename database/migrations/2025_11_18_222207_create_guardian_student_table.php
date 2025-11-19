@@ -1,9 +1,9 @@
 <?php
- 
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
- 
+
 return new class extends Migration
 {
     /**
@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('parent_student', function (Blueprint $table) {
+        Schema::create('guardian_student', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('parent_id')
-                  ->constrained('parentsmodel')
-                  ->cascadeOnDelete();
+            $table->foreignId('guardian_id')
+                  ->constrained('guardians')
+                  ->onDelete('cascade');
             $table->foreignId('student_id')
                   ->constrained('students')
                   ->cascadeOnDelete();
@@ -25,16 +25,15 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
  
             // Índice único compuesto
-            $table->unique(['parent_id', 'student_id'], 'ux_parent_student');
+            $table->unique(['guardian_id', 'student_id'], 'ux_guardian_student');
         });
     }
- 
+
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('parent_student');
+        Schema::dropIfExists('guardian_student');
     }
 };
-

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class ParentStudent extends Pivot
+class GuardianStudent extends Pivot
 {
     use HasFactory;
  
@@ -14,7 +14,7 @@ class ParentStudent extends Pivot
      *
      * @var string
      */
-    protected $table = 'parent_student';
+    protected $table = 'guardian_student';
 
     /**
      * Indicates if the model should be timestamped.
@@ -29,7 +29,7 @@ class ParentStudent extends Pivot
      * @var list<string>
      */
     protected $fillable = [
-        'parent_id',
+        'guardian_id',
         'student_id',
         'relationship',
         'is_primary',

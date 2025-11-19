@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('parents_models', function (Blueprint $table) {
+        Schema::create('guardians', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')
                   ->unique()
                   ->constrained('users')
                   ->cascadeOnDelete();
             $table->string('personal_email', 255)->nullable();
-            $table->string('phone_number',20)->nullable();
+            $table->string('phone_number', 20)->nullable();
             $table->string('whatsapp_number', 20)->nullable();
             $table->timestamp('created_at')->useCurrent();
         });
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('parents_models');
+        Schema::dropIfExists('guardians');
     }
 };
