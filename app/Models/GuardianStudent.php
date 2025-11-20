@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class GuardianStudent extends Pivot
@@ -46,5 +47,21 @@ class GuardianStudent extends Pivot
             'is_primary' => 'boolean',
             'created_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the guardian that owns the relationship.
+     */
+    public function guardian(): BelongsTo
+    {
+        return $this->belongsTo(Guardian::class);
+    }
+
+    /**
+     * Get the student that owns the relationship.
+     */
+    public function student(): BelongsTo
+    {
+        return $this->belongsTo(Student::class);
     }
 }
