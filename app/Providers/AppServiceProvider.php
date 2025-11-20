@@ -2,8 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\Guardian;
+use App\Models\Student;
 use App\Models\Teacher;
+use App\Observers\GuardianObserver;
+use App\Observers\StudentObserver;
 use App\Observers\TeacherObserver;
+use App\Policies\GuardianPolicy;
+use App\Policies\StudentPolicy;
 use App\Policies\TeacherPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -17,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Teacher::class => TeacherPolicy::class,
+        Guardian::class => GuardianPolicy::class,
+        Student::class => StudentPolicy::class,
     ];
 
     /**
@@ -32,8 +40,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Registrar el Observer de Teacher
+        // Registrar Observers
         Teacher::observe(TeacherObserver::class);
+        Guardian::observe(GuardianObserver::class);
+        Student::observe(StudentObserver::class);
 
         // Registrar las policies
         foreach ($this->policies as $model => $policy) {
