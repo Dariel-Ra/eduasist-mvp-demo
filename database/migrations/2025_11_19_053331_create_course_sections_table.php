@@ -20,6 +20,10 @@ return new class extends Migration
             $table->string('section', 50)->nullable();
             $table->string('classroom', 50)->nullable();
             $table->integer('max_students')->nullable();
+            $table->set('schedule_days', ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'])
+                  ->comment('Días de la semana en que se imparte la clase');
+            $table->time('start_time')->comment('Hora de inicio de la clase');
+            $table->time('end_time')->comment('Hora de fin de la clase');
             $table->boolean('active')->default(true);
             $table->timestamp('created_at')->useCurrent();
         });

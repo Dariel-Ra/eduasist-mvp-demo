@@ -37,6 +37,9 @@ class CourseSection extends Model
         'section',
         'classroom',
         'max_students',
+        'schedule_days',
+        'start_time',
+        'end_time',
         'active',
     ];
 
@@ -49,6 +52,9 @@ class CourseSection extends Model
     {
         return [
             'max_students' => 'integer',
+            'schedule_days' => 'array',
+            'start_time' => 'datetime:H:i:s',
+            'end_time' => 'datetime:H:i:s',
             'active' => 'boolean',
             'created_at' => 'datetime',
         ];
