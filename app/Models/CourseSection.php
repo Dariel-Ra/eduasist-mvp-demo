@@ -37,9 +37,6 @@ class CourseSection extends Model
         'section',
         'classroom',
         'max_students',
-        'schedule_days',
-        'start_time',
-        'end_time',
         'active',
     ];
 
@@ -53,9 +50,6 @@ class CourseSection extends Model
         return [
             'max_students' => 'integer',
             'active' => 'boolean',
-            'schedule_days' => 'array', // SET se puede manejar como array
-            'start_time' => 'datetime:H:i:s', // o simplemente 'string' si prefieres
-            'end_time' => 'datetime:H:i:s',
             'created_at' => 'datetime',
         ];
     }
@@ -81,56 +75,16 @@ class CourseSection extends Model
      */
     public function students(): BelongsToMany
     {
-        return $this->belongsToMany(Student::class, 
-        'course_section_student', 
-        'course_section_id', 
-        'student_id')
+        return $this->belongsToMany(Student::class, 'course_section_student', 'course_section_id', 'student_id')
             ->using(CourseSectionStudent::class)
             ->withPivot('status')
             ->withTimestamps();
     }
-
     /**
      * Get the attendances for the section.
      */
     public function attendances(): HasMany
     {
-        return $this->hasMany(StudentAttendance::class, 
-        'course_section_id');
-    }
-
-
-    /**
-     * Available days for schedule
-     *
-     * @var array
-     */
-    const SCHEDULE_DAYS = [
-        'monday' => 'Lunes',
-        'tuesday' => 'Martes',
-        'wednesday' => 'Miércoles',
-        'thursday' => 'Jueves',
-        'friday' => 'Viernes',
-    ];
-
-
-       /**
-     * Accessors & Mutators
-     */
-
-   /**
-     * Accessor para obtener los días como array.
-     */
-    public function getScheduleDaysAttribute($value)
-    {
-        return $value ? explode(',', $value) : [];
-    }
-
-    /**
-     * Mutator para guardar los días como string SET.
-     */
-    public function setScheduleDaysAttribute($value)
-    {
-        $this->attributes['schedule_days'] = is_array($value) ? implode(',', $value) : $value;
+        return $this->hasMany(StudentAttendance::class, 'course_section_id');
     }
 }
