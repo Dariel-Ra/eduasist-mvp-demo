@@ -54,9 +54,6 @@ class CourseSection extends Model
             'max_students' => 'integer',
             'active' => 'boolean',
             'created_at' => 'datetime',
-            'schedule_days' => 'array',
-            'start_time' => 'datetime:H:i:s',
-            'end_time' => 'datetime:H:i:s',
         ];
     }
  
