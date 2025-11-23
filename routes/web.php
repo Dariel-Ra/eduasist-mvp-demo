@@ -21,3 +21,4 @@ require __DIR__.'/teachers.php';
 require __DIR__.'/guardians.php';
 require __DIR__.'/students.php';
 require __DIR__.'/guardian-student.php';
+require __DIR__.'/courses.php';
