@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use App\Enums\ScheduleDay;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class CourseSection extends Model
 {
-        use HasFactory;
+    use HasFactory;
 
     /**
      * The table associated with the model.
@@ -53,12 +55,73 @@ class CourseSection extends Model
         return [
             'max_students' => 'integer',
             'active' => 'boolean',
-            'schedule_days' => 'array', // SET se puede manejar como array
-            'start_time' => 'datetime:H:i:s', // o simplemente 'string' si prefieres
-            'end_time' => 'datetime:H:i:s',
             'created_at' => 'datetime',
         ];
     }
+
+    /** 
+    * Accessor/Mutator for schedule_days 
+    * Returns array of strings (enum values) 
+    */
+    protected function scheduleDays(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => $value 
+                ? explode(',', $value) 
+                : [],
+            set: fn (array|string|null $value) => match(true) {
+                is_array($value) => implode(',', array_filter($value)),
+                is_string($value) => $value,
+                default => null,
+            }
+        );
+    }
+
+    /**
+     * Gets schedule_days as an array of Enums
+     * 
+     * @return ScheduleDay[]
+     */
+    public function getScheduleDayEnums(): array
+    {
+        return ScheduleDay::fromArray($this->schedule_days);
+    }
+
+    /**
+     * Set schedule_days from an array of Enums
+     * 
+     * @param ScheduleDay[] $days
+     */
+    public function setScheduleDayEnums(array $days): void
+    {
+        $this->schedule_days = ScheduleDay::toValues($days);
+    }
+
+    /**
+     * Accessor for start_time
+     */
+    protected function startTime(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => $value 
+                ? \Carbon\Carbon::createFromTimeString($value)
+                : null,
+        );
+    }
+
+    /**
+     * Accessor for end_time
+     */
+    protected function endTime(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => $value 
+                ? \Carbon\Carbon::createFromTimeString($value)
+                : null,
+        );
+    }
+
+    // ==================== RELATIONS ====================
 
     /**
      * Get the course that owns the section.
@@ -95,171 +158,194 @@ class CourseSection extends Model
      */
     public function attendances(): HasMany
     {
-        return $this->hasMany(StudentAttendance::class, 
-        'course_section_id');
+        return $this->hasMany(StudentAttendance::class, 'course_section_id');
     }
 
-
-    /**
-     * Available days for schedule
-     *
-     * @var array
-     */
-    const SCHEDULE_DAYS = [
-        'monday' => 'Lunes',
-        'tuesday' => 'Martes',
-        'wednesday' => 'Miércoles',
-        'thursday' => 'Jueves',
-        'friday' => 'Viernes',
-    ];
-
-
-       /**
-     * Accessors & Mutators
-     */
-
-    /**
-     * Get schedule days as array.
-     *
-     * @param  string|null  $value
-     * @return array
-     */
-    public function getScheduleDaysAttribute($value)
+    // ==================== SCOPES ====================
+    
+    public function scopeActive($query)
     {
-        // MySQL SET returns comma-separated values
-        return $value !== null && $value !== '' ? explode(',', $value) : [];
+        return $query->where('active', true);
     }
 
-    /**
-     * Set schedule days from array.
-     *
-     * @param  array|string  $value
-     * @return void
-     */
-    public function setScheduleDaysAttribute($value)
+    public function scopeByTeacher($query, int $teacherId)
     {
-        $this->attributes['schedule_days'] = is_array($value) 
-        ? implode(',', array_filter($value)) // Elimina valores vacíos
-        : $value ?? ''; // Maneja null explícitamente
+        return $query->where('teacher_id', $teacherId);
     }
 
-       
     /**
-     * Helper Methods
+     * esp. Scope para filtrar por día usando el Enum
+     * eng. Scope to filter by day using the Enum
      */
-
-    /**
-     * Check if the section has classes on a specific day.
-     *
-     * @param  string  $day
-     * @return bool
-     */
-    public function hasClassOn(string $day): bool
+    public function scopeWithScheduleOn($query, ScheduleDay|string $day)
     {
-        return in_array($day, $this->schedule_days);
+        $dayValue = $day instanceof ScheduleDay ? $day->value : $day;
+        return $query->whereRaw("FIND_IN_SET(?, schedule_days) > 0", [$dayValue]);
+    }
+
+    // ==================== AUXILIARY METHODS ====================
+
+    /**
+     * esp. Verifica si la sección tiene clases en un día específico
+     * eng. Check if the section has classes on a specific day
+     */
+    public function hasClassOn(ScheduleDay|string $day): bool
+    {
+        $dayValue = $day instanceof ScheduleDay ? $day->value : $day;
+        return in_array($dayValue, $this->schedule_days, true);
     }
 
     /**
-     * Get formatted schedule days in Spanish.
-     *
-     * @return array
+     * esp. Obtiene los días formateados en español
+     * eng. Get the days formatted in Spanish
      */
     public function getFormattedScheduleDays(): array
     {
-        $days = [];
-        foreach ($this->schedule_days as $day) {
-            if (isset(self::SCHEDULE_DAYS[$day])) {
-                $days[] = self::SCHEDULE_DAYS[$day];
-            }
-        }
-        return $days;
+        return collect($this->getScheduleDayEnums())
+            ->map(fn(ScheduleDay $day) => $day->label())
+            ->toArray();
     }
 
     /**
-     * Get formatted schedule string.
-     *
-     * @return string
+     * esp. Obtiene los días formateados en versión corta
+     * eng. Get the days formatted in short version
+     */
+    public function getShortScheduleDays(): array
+    {
+        return collect($this->getScheduleDayEnums())
+            ->map(fn(ScheduleDay $day) => $day->shortLabel())
+            ->toArray();
+    }
+
+    /**
+     * esp. Obtiene el string completo del horario
+     * eng. Get the full schedule string
      */
     public function getScheduleString(): string
     {
         $days = implode(', ', $this->getFormattedScheduleDays());
-        return sprintf('%s de %s a %s', 
-            $days, 
-            $this->start_time ? $this->start_time->format('H:i') : '',
-            $this->end_time ? $this->end_time->format('H:i') : ''
+        
+        return sprintf(
+            '%s de %s a %s',
+            $days ?: 'Sin días asignados',
+            $this->start_time?->format('H:i') ?? '--:--',
+            $this->end_time?->format('H:i') ?? '--:--'
         );
     }
 
     /**
-     * Check if a class is happening now.
-     *
-     * @return bool
+     * esp. Obtiene el string corto del horario
+     * eng. Get the short schedule string
+     */
+    public function getShortScheduleString(): string
+    {
+        $days = implode('-', $this->getShortScheduleDays());
+        
+        return sprintf(
+            '%s %s-%s',
+            $days,
+            $this->start_time?->format('H:i') ?? '--',
+            $this->end_time?->format('H:i') ?? '--'
+        );
+    }
+
+    /**
+     * esp. Verifica si la clase está en sesión ahora
+     * eng. Check if the class is in session now
      */
     public function isInSession(): bool
     {
         $now = now();
-        $currentDay = strtolower($now->format('l'));
-        $currentTime = $now->format('H:i:s');
+        $currentDay = ScheduleDay::fromCarbonDay($now->englishDayOfWeek);
 
-        // Check if today is a scheduled day
-        if (!$this->hasClassOn($currentDay)) {
+        if (!$currentDay || !$this->hasClassOn($currentDay)) {
             return false;
         }
 
-        // Check if current time is within class hours
-        return $currentTime >= $this->start_time && 
-               $currentTime <= $this->end_time;
+        if (!$this->start_time || !$this->end_time) {
+            return false;
+        }
+
+        $currentTime = $now->format('H:i:s');
+        $startTime = $this->getRawOriginal('start_time');
+        $endTime = $this->getRawOriginal('end_time');
+
+        return $currentTime >= $startTime && $currentTime <= $endTime;
     }
 
     /**
-     * Get the next class date and time.
-     *
-     * @return \Illuminate\Support\Carbon|null
+     * esp. Obtiene la fecha y hora de la próxima clase
+     * eng. Get the date and time of the next class
      */
-    public function getNextClassDateTime()
+    public function getNextClassDateTime(): ?\Illuminate\Support\Carbon
     {
-        if (empty($this->schedule_days)) {
+        if (empty($this->schedule_days) || !$this->start_time) {
             return null;
         }
 
         $now = now();
-        $currentDayName = strtolower($now->format('l'));
-        $currentTime = $now->format('H:i:s');
+        $currentDay = ScheduleDay::fromCarbonDay($now->englishDayOfWeek);
+        $startTime = $this->getRawOriginal('start_time');
 
-        // Map day names to Carbon day constants
-        $dayMap = [
-            'monday' => 1,
-            'tuesday' => 2,
-            'wednesday' => 3,
-            'thursday' => 4,
-            'friday' => 5,
-        ];
-
-        // Check if there's a class today that hasn't started yet
-        if ($this->hasClassOn($currentDayName) && $currentTime < $this->start_time) {
-            return $now->copy()->setTimeFromTimeString($this->start_time);
+        // esp. Verificar si hay clase hoy que aún no ha comenzado
+        // eng. Check if there is a class today that hasn't started yet
+        if ($currentDay && 
+            $this->hasClassOn($currentDay) && 
+            $now->format('H:i:s') < $startTime) {
+            return $now->copy()->setTimeFromTimeString($startTime);
         }
 
-        // Find the next scheduled day
-        $scheduledDays = array_map(function($day) use ($dayMap) {
-            return $dayMap[$day];
-        }, $this->schedule_days);
-
-        sort($scheduledDays);
+        // esp. Buscar el próximo día programado
+        // eng. Find the next scheduled day
+        $scheduledDays = collect($this->getScheduleDayEnums())
+            ->map(fn(ScheduleDay $day) => $day->dayNumber())
+            ->sort()
+            ->values();
 
         $currentDayNumber = $now->dayOfWeekIso;
         
-        // Find next day after today
-        foreach ($scheduledDays as $day) {
-            if ($day > $currentDayNumber) {
-                return $now->copy()->next($day)->setTimeFromTimeString($this->start_time);
-            }
+        // esp. Buscar el siguiente día en la misma semana
+        // eng. Find the next day in the same week
+        $nextDay = $scheduledDays->first(fn($day) => $day > $currentDayNumber);
+        
+        if ($nextDay) {
+            return $now->copy()->next($nextDay)->setTimeFromTimeString($startTime);
         }
-        // If no day found this week, get the first day of next week
-        if (!empty($scheduledDays)) {
-            return $now->copy()->next($scheduledDays[0])->setTimeFromTimeString($this->start_time);
+
+        // esp. Si no hay más días esta semana, ir al primer día de la próxima semana
+        // eng. If no more days this week, go to the first day of next week
+        if ($scheduledDays->isNotEmpty()) {
+            return $now->copy()->next($scheduledDays->first())->setTimeFromTimeString($startTime);
         }
 
         return null;
+    }
+
+    public function getEnrolledCount(): int
+    {
+        return $this->students()->count();
+    }
+
+    public function hasAvailableSeats(): bool
+    {
+        if (!$this->max_students) {
+            return true;
+        }
+
+        return $this->getEnrolledCount() < $this->max_students;
+    }
+
+    public function getAvailableSeats(): ?int
+    {
+        if (!$this->max_students) {
+            return null;
+        }
+
+        return max(0, $this->max_students - $this->getEnrolledCount());
+    }
+
+    public function isFull(): bool
+    {
+        return !$this->hasAvailableSeats();
     }
 }
