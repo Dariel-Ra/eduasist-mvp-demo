@@ -37,6 +37,9 @@ class CourseSection extends Model
         'section',
         'classroom',
         'max_students',
+        'schedule_days',
+        'start_time',
+        'end_time',
         'active',
     ];
 
@@ -52,6 +55,22 @@ class CourseSection extends Model
             'active' => 'boolean',
             'created_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the schedule days as an array.
+     */
+    public function getScheduleDaysAttribute($value): array
+    {
+        return $value ? explode(',', $value) : [];
+    }
+
+    /**
+     * Set the schedule days from an array.
+     */
+    public function setScheduleDaysAttribute($value): void
+    {
+        $this->attributes['schedule_days'] = is_array($value) ? implode(',', $value) : $value;
     }
 
     /**
