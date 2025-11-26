@@ -41,12 +41,13 @@ class CourseSectionResource extends JsonResource
             'next_class' => $this->getNextClassDateTime()?->toISOString(),
             
             // Relaciones
-            'course' => $this->whenLoaded('course', fn() => new CourseResource($this->course)),
-            'teacher' => $this->whenLoaded('teacher', fn() => new TeacherResource($this->teacher)),
+            'course' => $this->whenLoaded('course', fn() => CourseResource::make($this->course)),
+            'teacher' => $this->whenLoaded('teacher', fn() => TeacherResource::make($this->teacher)),
             'students' => $this->whenLoaded('students', fn() => StudentResource::collection($this->students)),
         ];
     }
-
+//             'course' => $this->whenLoaded('course', fn() => CourseResource::make($this->course)),
+//             'teacher' => $this->whenLoaded('teacher', fn() => TeacherResource::make($this->teacher)),
     /**
      * Get additional data that should be returned with the resource array.
      *

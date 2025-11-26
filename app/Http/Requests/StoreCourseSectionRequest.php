@@ -24,13 +24,42 @@ class StoreCourseSectionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'course_id' => ['required', 'integer', 'exists:courses,id'],
-            'teacher_id' => ['required', 'integer', 'exists:teachers,id'],
-            'section' => ['nullable', 'string', 'max:50'],
-            'classroom' => ['nullable', 'string', 'max:50'],
-            'max_students' => ['nullable', 'integer', 'min:1', 'max:100'],
-            'schedule_days' => ['required', 'array', 'min:1'],
-            'schedule_days.*' => ['required', 'string', Rule::in(ScheduleDay::values())],
+            'course_id' => [
+            'required', 
+            'integer', 
+            'exists:courses,id'
+        ],
+            'teacher_id' => [
+            'required', 
+            'integer', 
+            'exists:teachers,id'
+        ],
+            'section' => [
+            'nullable', 
+            'string', 
+            'max:50'
+        ],
+            'classroom' => [
+            'nullable', 
+            'string', 
+            'max:50'
+        ],
+            'max_students' => [
+            'nullable', 
+            'integer', 
+            'min:1', 
+            'max:100'
+        ],
+            'schedule_days' => [
+            'required', 
+            'array', 
+            'min:1'
+            ],
+            'schedule_days.*' => [
+            'required', 
+            'string', 
+            Rule::in(ScheduleDay::values())
+            ],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
             'active' => ['nullable', 'boolean'],

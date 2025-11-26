@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\UpdateCourseRequest;
+use App\Http\Resources\CourseResource;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -72,7 +73,7 @@ class CourseController extends Controller
         $course->load('sections');
 
         return Inertia::render('Courses/Show', [
-            'course' => $course,
+            'course' => CourseResource::make($course),
         ]);
     }
 
