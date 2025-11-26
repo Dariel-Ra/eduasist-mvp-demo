@@ -69,9 +69,22 @@ class CourseSectionController extends Controller
     public function store(StoreCourseSectionRequest $request)
     {
         $request->load(['course', 'teacher', 'students']);
+        // // Create the section from validated data
+        // $validated = $request->validated();
+        // $courseSection = CourseSection::create($validated);
 
+        // // If students were passed, sync them (expecting array of ids)
+        // if ($request->has('students')) {
+        //     $studentIds = collect($request->input('students'))->map(fn($s) => is_array($s) && isset($s['id']) ? $s['id'] : $s)->filter()->values()->all();
+        //     if (!empty($studentIds)) {
+        //         $courseSection->students()->sync($studentIds);
+        //     }
+        // }
+
+        // $courseSection->load(['course', 'teacher', 'students']);
         return Inertia::render('CourseSections/Show', [
             'section' => new CourseSectionResource($request),
+            // 'section' => CourseSectionResource::make($courseSection),
         ]);
     }
 
@@ -84,6 +97,7 @@ class CourseSectionController extends Controller
 
         return Inertia::render('CourseSections/Show', [
             'section' => new CourseSectionResource($courseSection),
+            //'section' => CourseSectionResource::make($courseSection),
         ]);
     }
 
@@ -95,6 +109,7 @@ class CourseSectionController extends Controller
         
         return Inertia::render('CourseSections/Edit', [
             'section' => new CourseSectionResource($courseSection),
+            // 'section' => CourseSectionResource::make($courseSection),
             'courses' => Course::active()->get(['id', 'name', 'code']),
             'teachers' => Teacher::active()->get(['id', 'name', 'email']),
             'scheduleDays' => $this->getScheduleDaysForFrontend(),
