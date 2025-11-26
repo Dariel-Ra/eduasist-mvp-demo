@@ -24,8 +24,8 @@ class GuardianStudentResource extends JsonResource
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
  
             // Relaciones opcionales
-            'guardian' => new GuardianResource($this->whenLoaded('guardian')),
-            'student' => new StudentResource($this->whenLoaded('student')),
+            'guardian' => $this->whenLoaded('guardian', fn() => new GuardianResource($this->guardian)),
+            'student' => $this->whenLoaded('student', fn() => new StudentResource($this->student)),
         ]; 
     }
 
