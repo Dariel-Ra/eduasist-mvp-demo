@@ -109,6 +109,34 @@ class StoreCourseSectionRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
+        // Convertir schedule_days a array (soporta JSON y CSV)
+        if ($this->has('schedule_days') && is_string($this->schedule_days)) {
+            $scheduleDays = json_decode($this->schedule_days, true);
+            
+            // Si no es JSON válido, intentar con CSV
+            if ($scheduleDays === null) {
+                $scheduleDays = array_filter(explode(',', $this->schedule_days));
+            }
+            
+            $this->merge(['schedule_days' => $scheduleDays]);
+        }
+
+        // Normalizar active a boolean
+        if ($this->has('active')) {
+            $this->merge([
+                'active' => filter_var($this->active, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true,
+            ]);
+        } else {
+            // Valor por defecto si no está presente
+            $this->merge(['active' => true]);
+        }
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    /*protected function prepareForValidation(): void
+    {
         // Asegurar que schedule_days sea un array
         if ($this->has('schedule_days') && is_string($this->schedule_days)) {
             $this->merge([
@@ -122,5 +150,7 @@ class StoreCourseSectionRequest extends FormRequest
                 'active' => filter_var($this->active, FILTER_VALIDATE_BOOLEAN),
             ]);
         }
-    }
+    }*/
+
+
 }

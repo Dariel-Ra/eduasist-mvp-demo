@@ -22,6 +22,7 @@ class CourseSectionController extends Controller
     {
         $sections = CourseSection::query()
             ->with(['course', 'teacher'])
+            
             ->when($request->search, function ($query, $search) {
                 $query->where('section', 'like', "%{$search}%")
                       ->orWhere('classroom', 'like', "%{$search}%")

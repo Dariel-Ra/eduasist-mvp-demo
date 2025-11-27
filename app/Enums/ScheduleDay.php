@@ -97,6 +97,23 @@ enum ScheduleDay: string
         };
     }
 
+        /**
+     * Para uso en formularios (select/checkbox)
+     * Retorna: [['value' => 'monday', 'label' => 'Lunes'], ...]
+     */
+    public static function toOptions(): array
+    {
+        return collect(self::cases())
+            ->map(fn($case) => [
+                'value' => $case->value,
+                'label' => $case->label(),
+                'shortLabel' => $case->shortLabel(),
+                'dayNumber' => $case->dayNumber(),
+            ])
+            ->values()
+            ->toArray();
+    }
+
     /**
      * Obtiene todos los casos como array [value => label]
      */

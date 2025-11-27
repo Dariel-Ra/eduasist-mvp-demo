@@ -80,18 +80,26 @@ class UpdateCourseSectionRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        // Asegurar que schedule_days sea un array
+        // Convertir schedule_days a array (soporta JSON y CSV)
         if ($this->has('schedule_days') && is_string($this->schedule_days)) {
-            $this->merge([
-                'schedule_days' => json_decode($this->schedule_days, true) ?? [],
-            ]);
+            $scheduleDays = json_decode($this->schedule_days, true);
+            
+            // Si no es JSON válido, intentar con CSV
+            if ($scheduleDays === null) {
+                $scheduleDays = array_filter(explode(',', $this->schedule_days));
+            }
+            
+            $this->merge(['schedule_days' => $scheduleDays]);
         }
 
-        // Asegurar que active sea boolean
+        // Normalizar active a boolean
         if ($this->has('active')) {
             $this->merge([
-                'active' => filter_var($this->active, FILTER_VALIDATE_BOOLEAN),
+                'active' => filter_var($this->active, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true,
             ]);
+        } else {
+            // Valor por defecto si no está presente
+            $this->merge(['active' => true]);
         }
     }
 }
