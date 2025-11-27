@@ -3,6 +3,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\ScheduleDay;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -46,8 +47,7 @@ class CourseSectionResource extends JsonResource
             'students' => $this->whenLoaded('students', fn() => StudentResource::collection($this->students)),
         ];
     }
-//             'course' => $this->whenLoaded('course', fn() => CourseResource::make($this->course)),
-//             'teacher' => $this->whenLoaded('teacher', fn() => TeacherResource::make($this->teacher)),
+
     /**
      * Get additional data that should be returned with the resource array.
      *
