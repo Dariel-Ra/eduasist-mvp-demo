@@ -27,7 +27,7 @@ enum ScheduleDay: string
 
     /**
      * Obtiene la etiqueta abreviada
-     */
+     */ 
     public function shortLabel(): string
     {
         return match($this) {
