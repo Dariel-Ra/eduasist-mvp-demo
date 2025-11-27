@@ -50,6 +50,7 @@ class Course extends Model
         ];
     }
 
+    
     /**
      * Get the sections for the course.
      */
