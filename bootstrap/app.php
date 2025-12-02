@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\CheckUserRole;
+use App\Http\Middleware\CheckUserStatus;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -20,6 +22,12 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            CheckUserStatus::class,
+        ]);
+
+        $middleware->alias([
+            'role' => CheckUserRole::class,
+            'status' => CheckUserStatus::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

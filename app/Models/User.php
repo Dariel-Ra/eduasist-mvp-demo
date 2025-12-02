@@ -21,7 +21,12 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'first_name',
+        'last_name',
         'email',
+        'phone',
+        'role',
+        'status',
         'password',
     ];
 
@@ -48,6 +53,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'role' => 'string',
+            'status' => 'string',
         ];
     }
 
@@ -65,5 +72,73 @@ class User extends Authenticatable
     public function parent(): HasOne
     {
         return $this->hasOne(Guardian::class);
+    }
+
+    /**
+     * Get the user's full name.
+     */
+    public function getFullNameAttribute(): string
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
+
+    /**
+     * Check if the user is a system administrator.
+     */
+    public function isSysAdmin(): bool
+    {
+        return $this->role === 'sysadmin';
+    }
+
+    /**
+     * Check if the user is an administrator.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if the user is a teacher.
+     */
+    public function isTeacher(): bool
+    {
+        return $this->role === 'teacher';
+    }
+
+    /**
+     * Check if the user is a guardian.
+     */
+    public function isGuardian(): bool
+    {
+        return $this->role === 'guardian';
+    }
+
+    /**
+     * Check if the user has any of the given roles.
+     */
+    public function hasRole(string|array $roles): bool
+    {
+        if (is_string($roles)) {
+            return $this->role === $roles;
+        }
+
+        return in_array($this->role, $roles);
+    }
+
+    /**
+     * Check if the user is active.
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    /**
+     * Check if the user is inactive.
+     */
+    public function isInactive(): bool
+    {
+        return $this->status === 'inactive';
     }
 }
