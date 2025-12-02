@@ -21,6 +21,8 @@ class ProfileController extends Controller
         return Inertia::render('settings/profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            'roles' => ['sysadmin', 'admin', 'teacher', 'guardian'],
+            'statuses' => ['active', 'inactive'],
         ]);
     }
 
@@ -29,7 +31,16 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $validated = $request->validated();
+ 
+        // Update the 'name' field if first_name or last_name changed
+        if (isset($validated['first_name']) || isset($validated['last_name'])) {
+            $firstName = $validated['first_name'] ?? $request->user()->first_name;
+            $lastName = $validated['last_name'] ?? $request->user()->last_name;
+            $validated['name'] = $firstName . ' ' . $lastName;
+        }
+ 
+        $request->user()->fill($validated);
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
