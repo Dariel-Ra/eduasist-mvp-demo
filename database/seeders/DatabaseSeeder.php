@@ -22,6 +22,11 @@ class DatabaseSeeder extends Seeder
                 'password' => 'password',
                 'email_verified_at' => now(),
             ]
+            
         );
+        $this->call([
+            UserSeeder::class,
+            // Agrega más seeders aquí
+        ]);
     }
 }
