@@ -24,3 +24,4 @@ require __DIR__.'/guardian-student.php';
 require __DIR__.'/courses.php';
 require __DIR__.'/course-sections.php';
 require __DIR__.'/attendances.php';
+require __DIR__.'/users.php';
