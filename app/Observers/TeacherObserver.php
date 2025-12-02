@@ -26,7 +26,7 @@ class TeacherObserver
         // Aquí puedes agregar lógica después de crear un profesor
         // Por ejemplo: enviar email de bienvenida, crear registros relacionados, etc.
         // Ejemplo: Log de creación
-        \Log::info("Profesor creado: {$teacher->code} - {$teacher->user->name}");
+        \Log::info("Profesor creado: {$teacher->code} - {$teacher->user->full_name}");
     }
  
     /**

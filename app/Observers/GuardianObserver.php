@@ -11,7 +11,7 @@ class GuardianObserver
      */
     public function created(Guardian $guardian): void
     {
-        \Log::info("Tutor creado: ID {$guardian->id} - Usuario: {$guardian->user->name}");
+        \Log::info("Tutor creado: ID {$guardian->id} - Usuario: {$guardian->user->full_name}");
     }
 
     /**
