@@ -17,30 +17,67 @@ class TeacherController extends Controller
     public function index(Request $request)
     {
         $query = Teacher::with('user');
- 
-        // Búsqueda por nombre de usuario, código o especialidad
-        if ($search = $request->input('search')) {
+
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', "%{$search}%")
                   ->orWhere('specialty', 'like', "%{$search}%")
                   ->orWhereHas('user', function ($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%")
+                      $q->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%");
                   });
             });
         }
 
-        // Filtro por especialidad
-        if ($specialty = $request->input('specialty')) {
-            $query->where('specialty', $specialty);
-
+        // Specialty filter
+        if ($request->filled('specialty')) {
+            $query->where('specialty', $request->input('specialty'));
         }
 
-        $teachers = $query->latest('created_at')->paginate(15);
+        // Sorting
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortOrder = $request->input('sort_order', 'desc');
 
-        return Inertia::render('Teachers/Index', [
+        switch ($sortBy) {
+            case 'name':
+                $query->join('users', 'teachers.user_id', '=', 'users.id')
+                      ->orderBy('users.first_name', $sortOrder)
+                      ->orderBy('users.last_name', $sortOrder)
+                      ->select('teachers.*');
+                break;
+            case 'code':
+                $query->orderBy('code', $sortOrder);
+                break;
+            case 'specialty':
+                $query->orderBy('specialty', $sortOrder);
+                break;
+            case 'created_at':
+            default:
+                $query->orderBy('created_at', $sortOrder);
+                break;
+        }
+
+        $teachers = $query->paginate(10)->withQueryString();
+
+        // Get all unique specialties for filter
+        $specialties = Teacher::whereNotNull('specialty')
+            ->distinct()
+            ->pluck('specialty')
+            ->sort()
+            ->values();
+
+        return Inertia::render('teachers/index', [
             'teachers' => $teachers,
-            'filters' => $request->only(['search', 'specialty']),
+            'filters' => [
+                'search' => $request->input('search'),
+                'specialty' => $request->input('specialty'),
+                'sort_by' => $sortBy,
+                'sort_order' => $sortOrder,
+            ],
+            'specialties' => $specialties,
         ]);
     }
 
@@ -49,7 +86,22 @@ class TeacherController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Teachers/Create');
+        // Get users with role=teacher that don't have a teacher profile yet
+        $availableUsers = \App\Models\User::where('role', 'teacher')
+            ->whereDoesntHave('teacher')
+            ->select('id', 'first_name', 'last_name', 'email')
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => "{$user->first_name} {$user->last_name}",
+                    'email' => $user->email,
+                ];
+            });
+
+        return Inertia::render('teachers/create', [
+            'availableUsers' => $availableUsers,
+        ]);
     }
 
     /**
@@ -67,9 +119,9 @@ class TeacherController extends Controller
      */
     public function show(Teacher $teacher): Response
     {
-        $teacher->load('user');
+        $teacher->load('user', 'sections', 'attendances');
 
-        return Inertia::render('Teachers/Show', [
+        return Inertia::render('teachers/show', [
             'teacher' => $teacher,
         ]);
     }
@@ -81,7 +133,7 @@ class TeacherController extends Controller
     {
         $teacher->load('user');
 
-        return Inertia::render('Teachers/Edit', [
+        return Inertia::render('teachers/edit', [
             'teacher' => $teacher,
         ]);
     }

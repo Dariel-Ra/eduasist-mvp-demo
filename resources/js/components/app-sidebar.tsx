@@ -13,7 +13,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Users } from 'lucide-react';
+import { BookOpen, Folder, GraduationCap, LayoutGrid, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const footerNavItems: NavItem[] = [
@@ -48,6 +48,15 @@ export function AppSidebar() {
             title: 'Usuarios',
             href: '/users',
             icon: Users,
+        });
+    }
+
+    // Add Teachers menu item only for sysadmin and admin
+    if (userRole === 'sysadmin' || userRole === 'admin') {
+        mainNavItems.push({
+            title: 'Profesores',
+            href: '/teachers',
+            icon: GraduationCap,
         });
     }
 
