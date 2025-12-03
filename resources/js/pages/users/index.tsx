@@ -56,17 +56,17 @@ interface UsersIndexProps {
 
     };
 
-    filters: {
+    // filters: {
 
-        search?: string;
+    //     search?: string;
 
-    };
+    // };
 
 }
 
  
 
-export default function UsersIndex({ users, filters }: UsersIndexProps) {
+export default function UsersIndex({ users /*filters*/ }: UsersIndexProps) {
 
     const handleDelete = (userId: number) => {
 
