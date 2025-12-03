@@ -31,8 +31,8 @@ class UserFactory extends Factory
             'last_name' => $lastName,
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->optional()->phoneNumber(),
-            'role' => fake()->randomElement(['sysadmin', 'admin', 'teacher', 'guardian']),
-            'status' => fake()->randomElement(['active', 'inactive']),
+            'role' => 'admin', // Default role for tests
+            'status' => 'active', // Default status is active
             'email_verified_at' => now(),
             'password' => static::$password ??= 'password',
             'remember_token' => Str::random(10),
@@ -61,6 +61,56 @@ class UserFactory extends Factory
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a sysadmin.
+     */
+    public function sysadmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'sysadmin',
+        ]);
+    }
+
+    /**
+     * Indicate that the user is an admin.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin',
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a teacher.
+     */
+    public function teacher(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'teacher',
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a guardian.
+     */
+    public function guardian(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'guardian',
+        ]);
+    }
+
+    /**
+     * Indicate that the user is inactive.
+     */
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'inactive',
         ]);
     }
 }
