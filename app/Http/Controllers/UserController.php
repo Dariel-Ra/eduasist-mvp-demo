@@ -19,21 +19,113 @@ class UserController extends Controller
      */
     public function index(Request $request): Response
     {
-        $users = User::query()
-            ->when($request->input('search'), function ($query, $search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('first_name', 'like', "%{$search}%")
-                      ->orWhere('last_name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
-                });
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10)
-            ->withQueryString();
+        $query = User::query();
+
  
+
+        // Search filter
+
+        if ($request->filled('search')) {
+
+            $search = $request->input('search');
+
+            $query->where(function ($q) use ($search) {
+
+                $q->where('first_name', 'like', "%{$search}%")
+
+                  ->orWhere('last_name', 'like', "%{$search}%")
+
+                  ->orWhere('email', 'like', "%{$search}%")
+
+                  ->orWhere('phone', 'like', "%{$search}%");
+
+            });
+
+        }
+
+ 
+
+        // Role filter
+
+        if ($request->filled('role')) {
+
+            $query->where('role', $request->input('role'));
+
+        }
+
+ 
+
+        // Status filter
+
+        if ($request->filled('status')) {
+
+            $query->where('status', $request->input('status'));
+
+        }
+
+ 
+
+        // Sorting
+
+        $sortBy = $request->input('sort_by', 'created_at');
+
+        $sortOrder = $request->input('sort_order', 'desc');
+
+ 
+
+        switch ($sortBy) {
+
+            case 'name':
+
+                $query->orderBy('first_name', $sortOrder)
+
+                      ->orderBy('last_name', $sortOrder);
+
+                break;
+
+            case 'email':
+
+                $query->orderBy('email', $sortOrder);
+
+                break;
+
+            case 'created_at':
+
+            default:
+
+                $query->orderBy('created_at', $sortOrder);
+
+                break;
+
+        }
+
+ 
+
+        $users = $query->paginate(10)->withQueryString();
+
+ 
+
         return Inertia::render('users/index', [
+
             'users' => $users,
-            'filters' => $request->only('search'),
+
+            'filters' => [
+
+                'search' => $request->input('search'),
+
+                'role' => $request->input('role'),
+
+                'status' => $request->input('status'),
+
+                'sort_by' => $sortBy,
+
+                'sort_order' => $sortOrder,
+
+            ],
+
+            'roles' => ['sysadmin', 'admin', 'teacher', 'guardian'],
+
+            'statuses' => ['active', 'inactive'],
         ]);
     }
 
