@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
     Table,
     TableBody,
@@ -10,7 +11,8 @@ import {
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type User } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import { Edit, FilterX, Plus, Search, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -29,10 +31,62 @@ interface UsersIndexProps {
     };
     filters: {
         search?: string;
+        role?: string;
+        status?: string;
+        sort_by?: string;
+        sort_order?: string;
     };
+    roles: string[];
+    statuses: string[];
 }
 
-export default function UsersIndex({ users, filters }: UsersIndexProps) {
+export default function UsersIndex({
+    users,
+    filters,
+    roles,
+    statuses,
+}: UsersIndexProps) {
+    const [search, setSearch] = useState(filters.search || '');
+    const [role, setRole] = useState(filters.role || '');
+    const [status, setStatus] = useState(filters.status || '');
+    const [sortBy, setSortBy] = useState(filters.sort_by || 'created_at');
+    const [sortOrder, setSortOrder] = useState(filters.sort_order || 'desc');
+
+    // Debounce search
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            applyFilters();
+        }, 300);
+
+        return () => clearTimeout(timeout);
+    }, [search, role, status, sortBy, sortOrder]);
+
+    const applyFilters = () => {
+        router.get(
+            '/users',
+            {
+                search: search || undefined,
+                role: role || undefined,
+                status: status || undefined,
+                sort_by: sortBy,
+                sort_order: sortOrder,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+            }
+        );
+    };
+
+    const clearFilters = () => {
+        setSearch('');
+        setRole('');
+        setStatus('');
+        setSortBy('created_at');
+        setSortOrder('desc');
+        router.get('/users', {}, { preserveState: false });
+    };
+
     const handleDelete = (userId: number) => {
         if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
             router.delete(`/users/${userId}`, {
@@ -57,6 +111,8 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
             : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     };
 
+    const hasActiveFilters = search || role || status || sortBy !== 'created_at' || sortOrder !== 'desc';
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Gestión de Usuarios" />
@@ -75,6 +131,94 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
                             Nuevo Usuario
                         </Button>
                     </Link>
+                </div>
+
+                {/* Filters and Search */}
+                <div className="rounded-lg border border-sidebar-border/70 bg-background p-4">
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+                        {/* Search */}
+                        <div className="lg:col-span-2">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    type="text"
+                                    placeholder="Buscar por nombre, email o teléfono..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="pl-10"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Role Filter */}
+                        <div>
+                            <select
+                                value={role}
+                                onChange={(e) => setRole(e.target.value)}
+                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            >
+                                <option value="">Todos los roles</option>
+                                {roles.map((r) => (
+                                    <option key={r} value={r}>
+                                        {r.charAt(0).toUpperCase() + r.slice(1)}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Status Filter */}
+                        <div>
+                            <select
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value)}
+                                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            >
+                                <option value="">Todos los estados</option>
+                                {statuses.map((s) => (
+                                    <option key={s} value={s}>
+                                        {s.charAt(0).toUpperCase() + s.slice(1)}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Sort By */}
+                        <div className="flex gap-2">
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            >
+                                <option value="created_at">Fecha de creación</option>
+                                <option value="name">Nombre</option>
+                                <option value="email">Email</option>
+                            </select>
+                            <select
+                                value={sortOrder}
+                                onChange={(e) => setSortOrder(e.target.value)}
+                                className="rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            >
+                                <option value="asc">↑ Asc</option>
+                                <option value="desc">↓ Desc</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {hasActiveFilters && (
+                        <div className="mt-4 flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={clearFilters}
+                            >
+                                <FilterX className="mr-2 h-4 w-4" />
+                                Limpiar filtros
+                            </Button>
+                            <p className="text-sm text-muted-foreground">
+                                {users.total} resultado(s) encontrado(s)
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 <div className="rounded-lg border border-sidebar-border/70 bg-background">
